@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.google.android.material.appbar.MaterialToolbar
 
 class DetailsActivity : AppCompatActivity() {
 
@@ -20,6 +21,13 @@ class DetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_details)
 
+        // --- Toolbar dengan tombol back ---
+        val toolbar: MaterialToolbar = findViewById(R.id.detailToolbar)
+        setSupportActionBar(toolbar)
+        toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+
         val titleText: TextView = findViewById(R.id.title_text)
         val releaseText: TextView = findViewById(R.id.release_text)
         val overviewText: TextView = findViewById(R.id.overview_text)
@@ -29,16 +37,14 @@ class DetailsActivity : AppCompatActivity() {
 
         titleText.text = extras?.getString(EXTRA_TITLE).orEmpty()
         releaseText.text = extras?.getString(EXTRA_RELEASE).orEmpty().take(4)
-
         overviewText.text =
             getString(R.string.movie_overview, extras?.getString(EXTRA_OVERVIEW).orEmpty())
 
         val posterPath = extras?.getString(EXTRA_POSTER).orEmpty()
-        Glide.with(this@DetailsActivity)
+        Glide.with(this)
             .load("$IMAGE_URL$posterPath")
             .placeholder(R.mipmap.ic_launcher)
             .fitCenter()
             .into(poster)
-
     }
 }
