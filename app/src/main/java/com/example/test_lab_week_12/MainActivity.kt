@@ -3,14 +3,17 @@ package com.example.test_lab_week_12
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.RecyclerView
+import com.example.test_lab_week_12.model.Movie
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import java.util.Calendar
-import com.example.test_lab_week_12.model.Movie
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,11 +29,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // --- Toolbar ---
         val toolbar: MaterialToolbar = findViewById(R.id.topAppBar)
         setSupportActionBar(toolbar)
 
-        // RecyclerView
         val recyclerView: RecyclerView = findViewById(R.id.movie_list)
         recyclerView.adapter = movieAdapter
 
@@ -44,25 +45,32 @@ class MainActivity : AppCompatActivity() {
             }
         )[MovieViewModel::class.java]
 
-        // Observe movie list
-        movieViewModel.popularMovies.observe(this, Observer { popularMovies ->
-            val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-            movieAdapter.addMovies(
-                popularMovies
-                    .filter { movie ->
-                        movie.releaseDate?.startsWith(currentYear) == true
+                launch {
+                    movieViewModel.popularMovies.collect { movies ->
+                        val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
+                        movieAdapter.addMovies(
+                            movies
+                                .filter { it.releaseDate?.startsWith(currentYear) == true }
+                                .sortedByDescending { it.popularity }
+                        )
                     }
-                    .sortedByDescending { it.popularity }
-            )
-        })
+                }
 
-        // Observe error
-        movieViewModel.error.observe(this, Observer { error ->
-            if (error.isNotEmpty()) {
-                Snackbar.make(recyclerView, error, Snackbar.LENGTH_LONG).show()
+                launch {
+                    movieViewModel.error.collect { errorMsg ->
+                        if (errorMsg.isNotEmpty()) {
+                            Snackbar
+                                .make(recyclerView, errorMsg, Snackbar.LENGTH_LONG)
+                                .show()
+                        }
+                    }
+                }
+
             }
-        })
+        }
     }
 
     private fun openMovieDetails(movie: Movie) {
