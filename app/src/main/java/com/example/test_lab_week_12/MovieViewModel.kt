@@ -7,8 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.Calendar   // <<< WAJIB DITAMBAHKAN
 
 class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel() {
 
@@ -29,7 +29,14 @@ class MovieViewModel(private val movieRepository: MovieRepository) : ViewModel()
                     _error.value = "An exception occurred: ${e.message}"
                 }
                 .collect { movies ->
-                    _popularMovies.value = movies
+
+                    val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
+
+                    val filtered = movies
+                        .filter { it.releaseDate?.startsWith(currentYear) == true }
+                        .sortedByDescending { it.popularity }
+
+                    _popularMovies.value = filtered
                 }
         }
     }
