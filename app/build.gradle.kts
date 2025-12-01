@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.test_lab_week_12"
+    namespace = "com.example.lab_week_13"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.test_lab_week_12"
+        applicationId = "com.example.lab_week_13"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -33,6 +33,10 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    buildFeatures{
+        dataBinding = true
     }
 }
 
@@ -64,4 +68,3 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
 }
-
